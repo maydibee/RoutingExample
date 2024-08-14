@@ -7,36 +7,30 @@
 
 import SwiftUI
 
-// MARK: - Hashable wrapper for Routable
+// MARK: - A type-erased wrapper for Routable
 
-struct AnyRoutable: Hashable {
-    private let _makeView: () -> AnyView
-    private let _hash: () -> Int
-    private let _equals: (Any) -> Bool
+struct AnyRoutable: Routable {
+    private let base: any Routable
+    private let equals: (any Routable) -> Bool
 
-    init<T: Routable>(_ router: T) {
-        _makeView = router.makeView
-        _hash = { router.hashValue }
-        _equals = { other in
-            guard let otherRouter = other as? T else { return false }
-            return router == otherRouter
+    init<T: Routable>(_ routable: T) {
+        base = routable
+        equals = { other in
+            guard let otherBase = other as? T else { return false }
+            return routable == otherBase
         }
     }
 
     func makeView() -> AnyView {
-        _makeView()
-    }
-
-    static func == (lhs: AnyRoutable, rhs: AnyRoutable) -> Bool {
-        lhs._equals(rhs._base)
+        self.base.makeView()
     }
 
     func hash(into hasher: inout Hasher) {
-        hasher.combine(_hash())
+        self.base.hash(into: &hasher)
     }
 
-    private var _base: Any {
-        _makeView as Any
+    static func == (lhs: AnyRoutable, rhs: AnyRoutable) -> Bool {
+        lhs.equals(rhs.base)
     }
+
 }
-
