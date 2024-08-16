@@ -8,7 +8,7 @@
 import SwiftUI
 
 class AppRouter: ObservableObject {
-    @Published var paths = NavigationPath()
+    @Published var paths: NavigationPath
     
     init(paths: NavigationPath = NavigationPath()) {
         self.paths = paths
